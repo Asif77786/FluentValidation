@@ -60,7 +60,6 @@ namespace FluentValidation {
 		private static Func<Type, MemberInfo, LambdaExpression, string> _propertyNameResolver = DefaultPropertyNameResolver;
 		private static Func<Type, MemberInfo, LambdaExpression, string> _displayNameResolver = DefaultDisplayNameResolver;
 		private static ILanguageManager _languageManager = new LanguageManager();
-
 		private static Func<MessageFormatter> _messageFormatterFactory = () => new MessageFormatter();
 		private static Func<PropertyValidator, string> _errorCodeResolver = DefaultErrorCodeResolver;
 
@@ -103,21 +102,22 @@ namespace FluentValidation {
 		}
 
 		/// <summary>
-		/// Disables the expression accessor cache. Not recommended.
-		/// </summary>
-		public static bool DisableAccessorCache { get; set; }
-
-		/// <summary>
-		/// Pluggable resolver for default error codes
+		/// Defines how the error codes for validators are constructed.
+		/// By default this is the class name of the property validator.
 		/// </summary>
 		public static Func<PropertyValidator, string> ErrorCodeResolver {
 			get => _errorCodeResolver;
 			set => _errorCodeResolver = value ?? DefaultErrorCodeResolver;
 		}
 
-		static string DefaultErrorCodeResolver(PropertyValidator validator) {
-			return validator.GetType().Name;
+		static string DefaultErrorCodeResolver(PropertyValidator propertyValidator) {
+			return propertyValidator.GetType().Name;
 		}
+		
+		/// <summary>
+		/// Disables the expression accessor cache. Not recommended.
+		/// </summary>
+		public static bool DisableAccessorCache { get; set; }
 	}
 
 	/// <summary>
