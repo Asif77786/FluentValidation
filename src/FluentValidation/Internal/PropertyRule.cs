@@ -37,6 +37,7 @@ namespace FluentValidation.Internal {
 		Func<CascadeMode> cascadeModeThunk = () => ValidatorOptions.CascadeMode;
 		string propertyDisplayName;
 		string propertyName;
+		private string[] _ruleSet = new string[0];
 
 		/// <summary>
 		/// Property associated with this rule.
@@ -61,7 +62,10 @@ namespace FluentValidation.Internal {
 		/// <summary>
 		/// Rule set that this rule belongs to (if specified)
 		/// </summary>
-		public string RuleSet { get; set; }
+		public string[] RuleSets {
+			get => _ruleSet;
+			set => _ruleSet = value ?? new string[0];
+		}
 
 		/// <summary>
 		/// Function that will be invoked if any of the validators associated with this rule fail.
@@ -482,6 +486,17 @@ namespace FluentValidation.Internal {
 		}
 
 		/// <summary>
+		/// Creates a new IncludeRule
+		/// </summary>
+		/// <param name="func"></param>
+		/// <param name="cascadeModeThunk"></param>
+		/// <param name="typeToValidate"></param>
+		/// <param name="containerType"></param>
+		public IncludeRule(Func<object, IValidator> func,  Func<CascadeMode> cascadeModeThunk, Type typeToValidate, Type containerType, Type validatorType) : base(null, x => x, null, cascadeModeThunk, typeToValidate, containerType) {
+			AddValidator(new ChildValidatorAdaptor(func,  validatorType));
+		}
+		
+		/// <summary>
 		/// Creates a new include rule from an existing validator
 		/// </summary>
 		/// <param name="validator"></param>
@@ -491,5 +506,19 @@ namespace FluentValidation.Internal {
 		public static IncludeRule Create<T>(IValidator validator, Func<CascadeMode> cascadeModeThunk) {
 			return new IncludeRule(validator, cascadeModeThunk, typeof(T), typeof(T));
 		}
+
+		/// <summary>
+		/// Creates a new include rule from an existing validator
+		/// </summary>
+		/// <param name="validator"></param>
+		/// <param name="cascadeModeThunk"></param>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TValidator"></typeparam>
+		/// <returns></returns>
+		public static IncludeRule Create<T, TValidator>(Func<T, TValidator> func, Func<CascadeMode> cascadeModeThunk) 
+		where TValidator : IValidator<T> {
+			return new IncludeRule(x => func((T)x), cascadeModeThunk, typeof(T), typeof(T), typeof(TValidator));
+		}
+
 	}
 }
